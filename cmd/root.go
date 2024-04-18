@@ -64,9 +64,9 @@ func init() {
 		cmd := exec.Command("git", "rev-parse", "--short", "HEAD")
 		output, err := cmd.Output()
 		if err != nil {
-			version = "0.0.0"
+			version = "dev-unknown"
 		} else {
-			version = strings.TrimSpace(string(output))
+			version = "dev-" + strings.TrimSpace(string(output))
 		}
 	}
 
