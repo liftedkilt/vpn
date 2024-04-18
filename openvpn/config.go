@@ -55,15 +55,23 @@ func FindConfig(region string) bool {
 	return false
 }
 
-func ImportConfig(path, region string) error {
+func ImportConfig(prefix, path, region string) error {
 	configFile := path + region + ".ovpn"
-
-	fmt.Println(configFile)
 
 	if _, err := os.Stat(configFile); errors.Is(err, os.ErrNotExist) {
 		fmt.Println("Config file not found, attempting to download it")
 
-		op.GetConfig(path, region)
+		config, err := op.GetDocument(prefix + " " + region)
+
+		if err != nil {
+			return fmt.Errorf("unable to obtain config '%s %s' from 1Password: %s", prefix, region, err)
+		}
+
+		err = os.WriteFile(configFile, config, 0644)
+
+		if err != nil {
+			return err
+		}
 	}
 
 	cmd := exec.Command("openvpn3", "config-import", "--config", configFile, "--name", region, "--persistent")

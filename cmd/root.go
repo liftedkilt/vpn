@@ -90,23 +90,33 @@ func init() {
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(confPath)
 
-	err = viper.ReadInConfig()
+	viper.ReadInConfig()
 
-	if err != nil {
-		// Prompt user for default region
-		reader := bufio.NewReader(os.Stdin)
+	reader := bufio.NewReader(os.Stdin)
+
+	// Check for default region
+	if !viper.IsSet("default-region") {
 		fmt.Print("Enter default region: ")
 		region, _ := reader.ReadString('\n')
 
 		viper.Set("default-region", strings.TrimSpace(region))
+	}
 
-		err := viper.WriteConfigAs(confPath + ".vpn.yaml")
-		if err != nil {
-			fmt.Printf("Error writing to %s.vpn.yaml: %s\n", confPath, err)
-		}
+	// Check for op-prefix
+	if !viper.IsSet("op-prefix") {
+		fmt.Print("Enter 1Password document prefix: ")
+		opPrefix, _ := reader.ReadString('\n')
+
+		viper.Set("op-prefix", strings.TrimSpace(opPrefix))
+	}
+
+	err = viper.WriteConfigAs(confPath + ".vpn.yaml")
+	if err != nil {
+		fmt.Printf("Error writing to %s.vpn.yaml: %s\n", confPath, err)
 	}
 
 	// Set region flag from Viper
+	rootCmd.PersistentFlags().StringP("op-prefix", "p", viper.GetString("op-prefix"), "Item prefix in 1Password for VPN configs (e.g. '[OpenVPN]')")
 	rootCmd.PersistentFlags().StringP("region", "r", viper.GetString("default-region"), "VPN Region")
 
 }

@@ -31,6 +31,8 @@ POSSIBILITY OF SUCH DAMAGE.
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/liftedkilt/vpn/openvpn"
 	"github.com/spf13/cobra"
 )
@@ -42,11 +44,16 @@ var upCmd = &cobra.Command{
 	Long:  `Start a new VPN connection to the specified region. If no region is specified, the default region will be used.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		region := rootCmd.PersistentFlags().Lookup("region").Value.String()
+		opPrefix := rootCmd.PersistentFlags().Lookup("op-prefix").Value.String()
 
 		if !openvpn.FindConfig(region) {
 			path := rootCmd.PersistentFlags().Lookup("configpath").Value.String()
 
-			openvpn.ImportConfig(path, region)
+			err := openvpn.ImportConfig(opPrefix, path, region)
+
+			if err != nil {
+				fmt.Println(err)
+			}
 		}
 
 		openvpn.StartSession(region)

@@ -1,16 +1,14 @@
 package op
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
-	"strings"
 )
 
 func GetConfig(configPath, region string) error {
-	regionUpper := strings.ToUpper(region)
-
-	doc := "[OpenVPN] " + regionUpper
+	doc := "[OpenVPN] " + region
 
 	filePath := configPath + region + ".ovpn"
 
@@ -22,4 +20,16 @@ func GetConfig(configPath, region string) error {
 	cmd.Stdout = os.Stdout
 
 	return cmd.Run()
+}
+
+func GetDocument(doc string) ([]byte, error) {
+	cmd := exec.Command("op", "document", "get", doc)
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+
+	output, err := cmd.Output()
+	if err != nil {
+		return nil, fmt.Errorf("error executing command: %v, stderr: %s", err, stderr.String())
+	}
+	return output, nil
 }
