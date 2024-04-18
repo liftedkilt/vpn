@@ -7,6 +7,8 @@ on:
 
 jobs:
   build:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
 
     steps:
@@ -29,8 +31,6 @@ jobs:
         run: echo "tag=$(cat version.txt)" >> $GITHUB_OUTPUT
 
       - name: Create Release
-        permissions:
-          contents: write
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.vars.outputs.tag }}
