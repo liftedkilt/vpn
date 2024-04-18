@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set Up Go
         uses: actions/setup-go@v5
@@ -26,7 +26,7 @@ jobs:
 
       - name: Extract Version
         id: vars
-        run: echo "version=${{ steps.vars.outputs.tag }}" >> $GITHUB_ENV
+        run: echo "tag=$(cat version.txt)" >> $GITHUB_OUTPUT
 
       - name: Create Release
         uses: actions/create-release@v1
