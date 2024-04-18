@@ -31,11 +31,14 @@ POSSIBILITY OF SUCH DAMAGE.
 package cmd
 
 import (
+	"bufio"
+	"fmt"
 	"os"
 	"os/exec"
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -79,6 +82,31 @@ func init() {
 		home = "/tmp"
 	}
 
-	rootCmd.PersistentFlags().StringP("configpath", "c", home+"/vpn/", "Directory containing VPN configs")
-	rootCmd.PersistentFlags().StringP("region", "r", "lax", "VPN Region")
+	confPath := home + "/vpn/"
+
+	rootCmd.PersistentFlags().StringP("configpath", "c", confPath, "Directory containing VPN configs")
+
+	viper.SetConfigName(".vpn")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(confPath)
+
+	err = viper.ReadInConfig()
+
+	if err != nil {
+		// Prompt user for default region
+		reader := bufio.NewReader(os.Stdin)
+		fmt.Print("Enter default region: ")
+		region, _ := reader.ReadString('\n')
+
+		viper.Set("default-region", strings.TrimSpace(region))
+
+		err := viper.WriteConfigAs(confPath + ".vpn.yaml")
+		if err != nil {
+			fmt.Printf("Error writing to %s.vpn.yaml: %s\n", confPath, err)
+		}
+	}
+
+	// Set region flag from Viper
+	rootCmd.PersistentFlags().StringP("region", "r", viper.GetString("default-region"), "VPN Region")
+
 }
